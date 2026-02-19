@@ -66,7 +66,8 @@ public class SmartHomeDashboard extends JFrame {
 
         ipComboBox = new JComboBox<>();
         for (String ip : getAvailableIpAddresses()) {
-            ipComboBox.addItem(ip);
+            ipComboBox.setEditable(true);
+            ipComboBox.addItem(ip.toString());
         }
         ipComboBox.setBackground(new Color(24, 26, 27));
         ipComboBox.setForeground(Color.WHITE);
@@ -128,9 +129,9 @@ public class SmartHomeDashboard extends JFrame {
         JPanel panel = new JPanel(new GridLayout(1, 3, 20, 0));
         panel.setBackground(new Color(24, 26, 27));
 
-        panel.add(createDeviceCard("Light", "ON / OFF"));
-        panel.add(createDeviceCard("Door", "LOCK / UNLOCK"));
-        panel.add(createDeviceCard("Alarm", "ARM / DISARM"));
+        panel.add(createDeviceCard("Light"));
+        panel.add(createDeviceCard("Door"));
+        panel.add(createDeviceCard("Alarm"));
 
         return panel;
     }
@@ -196,9 +197,8 @@ public class SmartHomeDashboard extends JFrame {
         return panel;
     }
 
-    private JPanel createDeviceCard(String titleText, String buttonText) {
-        JPanel card = new JPanel();
-        card.setLayout(new BorderLayout());
+    private JPanel createDeviceCard(String titleText) {
+        JPanel card = new JPanel(new BorderLayout());
         card.setBackground(new Color(34, 40, 49));
         card.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
 
@@ -206,17 +206,26 @@ public class SmartHomeDashboard extends JFrame {
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
 
-        JButton button = new JButton(buttonText);
-        button.setFocusPainted(false);
+        JButton button = new JButton("OFF");
         button.setBackground(new Color(0, 173, 181));
         button.setForeground(Color.WHITE);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        button.addActionListener(e -> {
+            if (socket == null || socket.isClosed()) return;
+
+            boolean isOn = button.getText().equals("ON");
+            String newState = isOn ? "OFF" : "ON";
+            button.setText(newState);
+
+            out.println(titleText.toUpperCase() + ":" + newState);
+        });
 
         card.add(title, BorderLayout.NORTH);
         card.add(button, BorderLayout.CENTER);
 
         return card;
     }
+
 
     private JPanel createSensorCard(String titleText, String valueText) {
         JPanel card = new JPanel();
